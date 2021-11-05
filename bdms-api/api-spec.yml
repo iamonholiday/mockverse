@@ -1,0 +1,469 @@
+swagger: "2.0"
+info:
+  description: "เอกสารการใช้งาน API บนระบบ Health Passport"
+  version: "1.0.0"
+  title: "BDMS - Health Passport"
+  termsOfService: "http://swagger.io/terms/"
+  contact:
+    email: "witthaya.t@ufu.life"
+  license:
+    name: "โรงพยาบาลกรุงเทพ"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+host: "petstore.swagger.io"
+basePath: "/v1"
+tags:
+  - name: "Booking"
+    description: "ส่วน booking"
+    externalDocs:
+      description: "Find out more"
+      url: "http://swagger.io"
+
+  - name: "Auth"
+    description: "ส่วน authorize, admin, authentication"
+
+  - name: "User"
+    description: "ส่วนของ user ทั้งหมดบนระบบ Frontend / Backoffice"
+    externalDocs:
+      description: "Find out more about our store"
+      url: "http://swagger.io"
+
+  - name: "Client"
+    description: "ส่วนของผู้ใช้งานฝั่ง Frontend"
+
+  - name: "Report"
+    description: "ส่วนของการประมวลผลแสดงรายงาน และกราฟ"
+
+  - name: "Data Set"
+    description: "ใช้เติมข้อมูลบน dropdownlist, list และอื่น ๆ"
+
+
+schemes:
+  - "https"
+  - "http"
+paths:
+
+
+
+  /booking:
+
+    get:
+      tags: ["Booking"]
+      summary: "ดึงข้อมูล booking โดย filter ด้วย userId จาก token หรือจาก parameter สำหรับ admin"
+      parameters:
+        - in: query
+          type: string
+          name: "userId"
+
+      responses:
+        200:
+          $ref: "#/responses/200"
+        401:
+          $ref: "#/responses/401"
+
+
+
+    post:
+      tags: ["Booking"]
+      summary: Book a new session.
+
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Book form"
+          required: true
+          schema:
+            $ref: "#/definitions/BookingForm"
+
+      responses:
+        default:
+          description: "successful operation"
+
+
+    delete:
+      tags: ["Booking"]
+      summary: Cancel session
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Book form"
+          schema:
+            type: "object"
+            properties:
+              userId:
+                type: string
+              bookedCode:
+                type: string
+
+      responses:
+        default:
+          description: "successful operation"
+
+  /labstat/{userId}:
+
+    get:
+      summary: Get lab stat by user
+      parameters:
+        - in: path
+          name: "userId"
+          type: "string"
+          format: "uuid"
+          required: true
+
+      responses:
+        default:
+          description: "successful operation"
+
+  /report/{module}/{reportName}:
+    get:
+      tags: ["Report"]
+      summary: Get L
+      parameters:
+        - in: path
+          name: reportName
+          type: string
+          required: true
+        - in: path
+          name: module
+          type: string
+          required: true
+        - in: query
+          name: renderTo
+          type: string
+          enum:
+            - "bar-chart"
+            - "line-chart"
+      responses:
+        default:
+          description: xxx
+          schema:
+            $ref: "#/definitions/ApiResponseItem"
+
+  /dataSet/{dataSetName}:
+    get:
+      tags: ["Data Set"]
+      summary: ใช้ดึงข้อมูล dropdownlist, radio list, any list
+      parameters:
+        - in: path
+          name: dataSetName
+          type: string
+          required: true
+        - in: query
+          name: page
+          type: number
+          format: integer
+        - in: query
+          name: ref1
+          type: string
+        - in: query
+          name: ref2
+          type: string
+        - in: query
+          name: ref3
+          type: string
+      responses:
+        default:
+          description: xxx
+          schema:
+            $ref: "#/definitions/ApiResponseItemsList"
+          example: [{},{},{}]
+
+  /auth/login:
+    post:
+      tags: ["Auth"]
+      summary: "ใช้ login เข้าสู่ระบบในส่วนของ Back Office"
+      parameters:
+        - in: "body"
+          name: "body"
+          schema:
+            $ref: "#/definitions/LoginForm"
+      responses:
+        200:
+          $ref: "#/definitions/LoginResponse"
+        401:
+          $ref: "#/responses/401"
+
+  /auth/forgotPassword:
+    post:
+      tags: ["Auth"]
+      summary: "ใช้ reset password"
+      parameters:
+        - in: "body"
+          name: "body"
+          schema:
+            $ref: "#/definitions/ForgotPasswordForm"
+      responses:
+        200:
+          $ref: "#/definitions/ForgotPasswordResponse"
+
+  /user:
+    get:
+      tags: ["User"]
+      summary: "ดู user profile"
+      parameters:
+        - in: "body"
+          name: "body"
+          schema:
+            $ref: "#/definitions/UserForm"
+
+
+parameters:
+  dataSet:
+    name: "dataSet"
+    in: "path"
+    required: true
+    type: "string"
+    enum:
+      -line
+      -bar
+    description: ""
+  userForm:
+    name: "userForm"
+    in: "body"
+    description: ""
+    schema:
+      $ref: "#/definitions/ForgotPasswordResponse"
+
+responses:
+
+  200:
+    description: "OK"
+    schema:
+      $ref: "#/definitions/ApiResponse"
+
+  401:
+    description: "Unauthorized"
+    schema:
+      $ref: "#/definitions/ApiResponse"
+
+securityDefinitions:
+  petstore_auth:
+    type: "oauth2"
+    authorizationUrl: "http://petstore.swagger.io/oauth/dialog"
+    flow: "implicit"
+    scopes:
+      write:pets: "modify pets in your account"
+      read:pets: "read your pets"
+  api_key:
+    type: "apiKey"
+    name: "api_key"
+    in: "header"
+
+
+
+definitions:
+
+  BookedFlag:
+    type: string
+    enum: ["booked", "canceled"]
+
+
+
+  UserFlag:
+    type: string
+    enum: ["active","suspend"]
+
+
+
+
+
+      # region ================= Model=====================
+  RoleModel:
+    type: "object"
+    properties:
+
+      roleCode:
+        type: string
+      roleName:
+        type: string
+
+  KeyPairModel:
+
+    type: "object"
+    properties:
+
+      keyCode:
+        type: string
+      keyName:
+        type: string
+      keyNote:
+        type: string
+
+
+  BasedAuditModel:
+    type: "object"
+    properties:
+      createdDateTime:
+        type: string
+        format: date-time
+
+  # region ================= Response=====================
+
+  ApiResponse:
+    type: "object"
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+      type:
+        type: "string"
+      message:
+        type: "string"
+
+
+  ApiResponseItem:
+    type: "object"
+    properties:
+      item:
+        type: object
+
+
+  ApiResponseItemsList:
+
+    properties:
+      items:
+        type: array
+        items: {}
+
+  ApiResponseCursor:
+    type: "object"
+    properties:
+      page:
+        type: number
+      totalPage:
+        type: number
+      totalItems:
+        type: number
+      items:
+        type: array
+        items: {}
+
+  ApiResponseMessage:
+    type: "object"
+    properties:
+      title:
+        type: string
+      description:
+        type: string
+      iconUrl:
+        type: string
+      type:
+        type: string
+
+  # region ================= Form =====================
+  BookingForm:
+    type: "object"
+    properties:
+
+      userId:
+        type: string
+      productCode:
+        type: string
+      appointmentTo:
+        type: string
+        description: "หมอหรือผู้ให้บริการ"
+      bookedDate:
+        type: string
+      bookedTime:
+        type: string
+      sessionLength:
+        type: string
+
+  BookingFormResponse:
+    type: "object"
+    $ref: "#/definitions/ApiResponseMessage"
+
+  TeleMedBookingForm:
+    type: "object"
+    properties:
+      userId:
+        type: string
+      productCode:
+        type: string
+      bookedDate:
+        type: string
+      bookedTime:
+        type: string
+      sessionLength:
+        type: string
+
+
+  AuthForm:
+
+    allOf:
+      - $ref: "#/definitions/BasedAuditModel"
+      - type: "object"
+        properties:
+
+          userId:
+            type: string
+
+          userName:
+            type: string
+
+          name:
+            type: string
+
+          acessRight:
+            type: object
+            $ref: "#/definitions/RoleModel"
+
+          roles:
+            type: array
+            items:
+              type: object
+              $ref: "#/definitions/RoleModel"
+
+  LoginForm:
+
+    allOf:
+      - type: "object"
+        properties:
+          userName:
+            type: string
+          password:
+            type: string
+
+  LoginResponse:
+    type: object
+    $ref: "#/responses/200"
+
+  ForgotPasswordForm:
+    allOf:
+      - type: "object"
+        properties:
+          username:
+            type: string
+          newPassword:
+            type: string
+          confirmPassword:
+            type: string
+
+  ForgotPasswordResponse:
+    type: object
+    $ref: "#/definitions/ApiResponseMessage"
+
+
+  # region ================= User Form =====================
+  UserForm:
+    type: object
+    properties:
+
+      userName:
+        type: string
+
+
+
+  FileUploadForm:
+    type: object
+    properties:
+      filename:
+        type: array
+        items:
+          type: string
+          format: binary
+
+
+
+externalDocs:
+  description: "Find out more about Swagger"
+  url: "http://swagger.io"
